@@ -3,14 +3,19 @@ import discord
 from discord.ext import commands
 import requests
 import random
-from api import random_dog, random_duck, run_code_api, random_anime
+from api import random_dog, random_duck, run_code_api, random_anime, predict_img
 from pytube import Channel
+from credentials import TOKEN
+
+
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix='>', intents=intents)
 csplst = ["камень", "ножницы", "бумага"]
 reports = 0
 c = Channel('https://www.youtube.com/channel/UCna8ZzxgyPVBzj0KKiUzYvw/videos')
 vd = 13
+
+
 @bot.command()
 async def report(ctx, user: discord.User = None, *reason):
     author = ctx.message.author
@@ -79,25 +84,35 @@ async def csp(ctx, msg):
         await ctx.send("вы выиграли")
     else:
         await ctx.send("вы проиграли")
+
+
 @bot.command()
-async def vidio (message):
+async def vidio(message):
     for url in c.video_urls[:1]:
         await message.send(url)
+
+
 @bot.command()
 async def allvidios(message):
     for url in c.video_urls:
         await message.send(url)
 
+
 @bot.command()
-async def hot_dog(ctx):
+async def hotdog(ctx):
     url = ctx.message.attachments[0].url
     img_name = url.split('/')[-1]
     img_data = requests.get(url).content
     with open(img_name, 'wb') as handler:
         handler.write(img_data)
+    answer = predict_img(img_name)
+    await ctx.send(answer)
+    
 
-        
+
 bad_words = ['лох', 'бот', 'слит']
+
+
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
@@ -108,7 +123,7 @@ async def on_message(message):
             await message.delete()
             await message.channel.send(f"your message has been censored {message.author.mention}.")
             return
-    
+
     await bot.process_commands(message)
-        
-bot.run('OTc1NDA4MjcwODQxOTA1MjQy.GDyZYT.uR0kudD18aND03OZK6QibhTD3r5Ugt00Etm7Xw')
+
+bot.run(TOKEN)
